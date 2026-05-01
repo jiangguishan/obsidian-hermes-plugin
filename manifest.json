@@ -1,0 +1,9 @@
+{
+  "id": "hermes-monitor",
+  "name": "Hermes Agent Monitor",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Monitor your local Hermes AI Agent: gateway status, sessions, skills, logs, and more.",
+  "author": "Hermes Monitor",
+  "isDesktopOnly": true
+}
