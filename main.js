@@ -121,19 +121,21 @@ class HermesCLI {
 
   static async getAgentStatus() {
     // Get detailed agent activity
-    const result = await this.run('sessions list --limit 10');
+    const result = await this.run('sessions list --limit 20');
     if (!result.success) return [];
 
     const sessions = [];
     for (const line of result.output.split('\n')) {
-      if (!line.trim() || line.includes('─') || line.includes('Title')) continue;
+      if (!line.trim() || line.includes('─') || line.includes('Title') || line.includes('Preview')) continue;
+
+      // Parse the table format: Preview | Last Active | Src | ID
       const parts = line.split(/\s{2,}/);
       if (parts.length >= 4) {
         sessions.push({
           preview: parts[0]?.trim() || '—',
-          lastActive: parts[2]?.trim() || '',
+          lastActive: parts[1]?.trim() || '',
+          source: parts[2]?.trim() || '',
           id: parts[3]?.trim() || '',
-          source: parts[1]?.trim() || ''
         });
       }
     }
