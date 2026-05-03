@@ -1654,6 +1654,9 @@ class HermesMonitorView extends ItemView {
 
       if (!text && !hasAttach) return;
 
+      // Use current sessionId from parent scope
+      let currentSessionId = sessionId;
+
       // Handle / commands
       if (text.startsWith('/')) {
         const parts = text.split(/\s+/);
@@ -1692,8 +1695,12 @@ class HermesMonitorView extends ItemView {
           '/new': () => {
             this.activeSessionId = null;
             sessionId = null;
+            currentSessionId = null;
             msgsEl.empty();
             msgsEl.createDiv({ cls: 'chat-empty', text: '已开始新会话' });
+            // Update header
+            const sessionIdEl = headerLeft.querySelector('.chat-session-id');
+            if (sessionIdEl) sessionIdEl.remove();
           },
           '/status': async () => {
             const sysMsg = msgsEl.createDiv({ cls: 'chat-msg chat-system' });
@@ -1822,7 +1829,7 @@ class HermesMonitorView extends ItemView {
             result = await HermesCLI.analyzeImage(filePath, prompt);
           } else {
             // Use regular chat for text files
-            result = await HermesCLI.chat(prompt, { sessionId });
+            result = await HermesCLI.chat(prompt, { sessionId: currentSessionId });
           }
 
           thinking.remove();
@@ -1836,9 +1843,19 @@ class HermesMonitorView extends ItemView {
               response = lines.slice(1).join('\n').trim();
             }
             msgsEl.createDiv({ cls: 'chat-msg chat-assistant' }).createDiv({ cls: 'msg-text', text: response });
-            if (newSessionId && !this.activeSessionId) {
+
+            // Update sessionId for subsequent messages
+            if (newSessionId) {
+              sessionId = newSessionId;
+              currentSessionId = newSessionId;
               this.activeSessionId = newSessionId;
-              headerLeft.querySelector('.chat-session-id')?.setText(newSessionId.substring(0, 12));
+
+              // Update header display
+              let sessionIdEl = headerLeft.querySelector('.chat-session-id');
+              if (!sessionIdEl) {
+                sessionIdEl = headerLeft.createEl('span', { cls: 'chat-session-id' });
+              }
+              sessionIdEl.setText(newSessionId.substring(0, 12));
             }
           } else {
             msgsEl.createDiv({ cls: 'chat-msg chat-error', text: result.output });
@@ -1857,7 +1874,7 @@ class HermesMonitorView extends ItemView {
 
         const thinking = msgsEl.createDiv({ cls: 'chat-msg chat-thinking', text: '思考中...' });
         try {
-          const result = await HermesCLI.chat(text, { sessionId });
+          const result = await HermesCLI.chat(text, { sessionId: currentSessionId });
           thinking.remove();
           if (result.success) {
             let response = result.output;
@@ -1868,9 +1885,19 @@ class HermesMonitorView extends ItemView {
               response = lines.slice(1).join('\n').trim();
             }
             msgsEl.createDiv({ cls: 'chat-msg chat-assistant' }).createDiv({ cls: 'msg-text', text: response });
-            if (newSessionId && !this.activeSessionId) {
+
+            // Update sessionId for subsequent messages
+            if (newSessionId) {
+              sessionId = newSessionId;
+              currentSessionId = newSessionId;
               this.activeSessionId = newSessionId;
-              headerLeft.querySelector('.chat-session-id')?.setText(newSessionId.substring(0, 12));
+
+              // Update header display
+              let sessionIdEl = headerLeft.querySelector('.chat-session-id');
+              if (!sessionIdEl) {
+                sessionIdEl = headerLeft.createEl('span', { cls: 'chat-session-id' });
+              }
+              sessionIdEl.setText(newSessionId.substring(0, 12));
             }
           } else {
             msgsEl.createDiv({ cls: 'chat-msg chat-error', text: result.output });
