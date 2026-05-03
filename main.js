@@ -877,7 +877,15 @@ class HermesChatModal extends Modal {
     this.suggestEl = contentEl.createDiv({ cls: 'hermes-chat-suggest' });
     this.suggestEl.style.display = 'none';
 
+    // IME composition tracking
+    let isComposing = false;
+    this.inputEl.addEventListener('compositionstart', () => { isComposing = true; });
+    this.inputEl.addEventListener('compositionend', () => { isComposing = false; });
+
     this.inputEl.addEventListener('keydown', (e) => {
+      // Skip if IME is composing (for Chinese, Japanese, Korean input)
+      if (isComposing || e.isComposing) return;
+
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); }
       if (e.key === 'ArrowUp') { e.preventDefault(); this.hist(-1); }
       if (e.key === 'ArrowDown') { e.preventDefault(); this.hist(1); }
@@ -1877,7 +1885,16 @@ class HermesMonitorView extends ItemView {
     };
 
     sendBtn.addEventListener('click', sendMessage);
+
+    // IME composition tracking for chat input
+    let chatComposing = false;
+    input.addEventListener('compositionstart', () => { chatComposing = true; });
+    input.addEventListener('compositionend', () => { chatComposing = false; });
+
     input.addEventListener('keydown', (e) => {
+      // Skip if IME is composing (for Chinese, Japanese, Korean input)
+      if (chatComposing || e.isComposing) return;
+
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
     input.addEventListener('input', () => {
